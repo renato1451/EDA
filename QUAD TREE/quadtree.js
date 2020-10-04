@@ -15,12 +15,15 @@ class Rectangle{
 }
 // verifica si este objeto contiene un objeto Punto
 contains( point){
-	return (point.x>(this.x-this.w) && point.x<(this.x+this.w) && point.y>(this.y-this.h) &&
-		point.y<(this.y+this.h)); 
+	return (point.x>=(this.x-this.w) && point.x<=(this.x+this.w) && point.y>=(this.y-this.h) &&
+		point.y<=(this.y+this.h)); 
 }
 // verifica si este objeto se intersecta con otro objeto Rectangle
 intersects( range ){
-	return !(range.x - range.w > this.x + this.w || range.x + range.w < this.x - this.w || range.y -range.h > this.y + this.h || range.y +range.h < this.y - this.h);
+	return !(range.x - range.w > this.x + this.w || 
+		range.x + range.w < this.x - this.w || 
+		range.y -range.h > this.y + this.h || 
+		range.y +range.h < this.y - this.h);
 	}
 }
 
@@ -54,16 +57,17 @@ subdivide(){
 }
 insert( point ){
 	if(!this.boundary.contains(point))
-		return;
+		return false;
 
 	if(this.points.length< this.capacity){
 		this.points.push(point);
 		return;
-	}
-	if(!this.divided){
+	}else{
+		if(!this.divided){
 		this.subdivide();
-		this.divided=true;
+		}
 	}
+	
 
 	this.northwest.insert(point);
 	this.northeast.insert(point);
@@ -82,45 +86,53 @@ insert( point ){
 // this . southwest . insert ( point );
 }
 
-query(range, found)
-	{
-		if(!range.intersects(this.boundary))
-		{	
-			return found;
-		}
-		for(let i=0;i<this.points.length;i++){
-			if(range.contains(this.points[i]))
-			{	found.push(this.points[i]);
-				count=count+1;
-			}
-		}
 
-		if(this.dividido)
+
+query(range, found){
+		// let found=[]
+		if(!this.boundary.intersects(range))
+		{	
+			return;
+		}
+		else{
+			for(let p of this.points){
+				
+				if(range.contains(p))
+				{	
+					// count++;
+					found.push(p);
+				}
+			}
+
+		}
+		if(this.divided)
 		{
-			this.hijoNO.query(range,found)
-			this.hijoNE.query(range,found)
-			this.hijoSO.query(range,found)
-			this.hijoSE.query(range,found)
+			this.northwest.query(range,found);
+			this.northeast.query(range,found);
+			this.southwest.query(range,found);
+			this.southeast.query(range,found);
 		}	
 
 		return found;
 }
 
 show(){
-	stroke(255) ;
-	strokeWeight(1) ;
-	noFill() ;
+	stroke(255);
+	
+	noFill();
+	strokeWeight(1);
 	rectMode( CENTER );
 	rect(this.boundary.x,this.boundary.y, this.boundary.w*2 , this.boundary.h*2);
+	for(let p of this.points ){
+		strokeWeight(4);
+		point(p.x, p.y);
+	}
 	if( this.divided ){
 		this.northeast.show();
 		this.northwest.show();
 		this.southeast.show();
 		this.southwest.show();
 	}
-	for(let p of this.points ){
-		strokeWeight(4);
-		point(p.x, p.y);
-	}
+	
 }
 }
